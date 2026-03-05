@@ -1,0 +1,6 @@
+gesdinet_jwt_refresh_token:
+    refresh_token_class: PIM\Security\Domain\Model\RefreshToken
+    ttl: '%env(int:JWT_REFRESH_TOKEN_TTL)%'
+    ttl_update: true
+    single_use: true
+    return_expiration: true

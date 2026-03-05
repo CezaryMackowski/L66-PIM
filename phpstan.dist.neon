@@ -9,3 +9,4 @@ parameters:
     	maximumNumberOfProcesses: 1
     excludePaths:
         - config/reference.php
+        - src/DataFixtures
