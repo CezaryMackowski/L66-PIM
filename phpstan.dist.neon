@@ -1,0 +1,11 @@
+parameters:
+    level: 9
+    paths:
+        - bin/
+        - config/
+        - public/
+        - src/
+    parallel:
+    	maximumNumberOfProcesses: 1
+    excludePaths:
+        - config/reference.php
