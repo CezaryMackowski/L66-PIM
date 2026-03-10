@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                    http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="PIM\Product\Domain\Model\Product"
+            table="products"
+            repository-class="PIM\Product\Infrastructure\Persistence\Doctrine\Repository\DoctrineProductRepository"
+    >
+        <id name="id" type="uuid">
+            <generator strategy="NONE"/>
+        </id>
+        <field name="name" length="255"/>
+        <field name="sku" length="64"/>
+        <embedded name="price" class="PIM\Product\Domain\ValueObject\Price" use-column-prefix="false"/>
+        <field name="status" enum-type="PIM\Product\Domain\Enum\ProductStatus"/>
+        <field name="createdAt" type="datetime_immutable" column="created_at"/>
+        <field name="updatedAt" type="datetime_immutable" column="updated_at"/>
+        <field name="deletedAt" type="datetime_immutable" column="deleted_at" nullable="true"/>
+    </entity>
+</doctrine-mapping>

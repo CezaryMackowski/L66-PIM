@@ -17,9 +17,21 @@ doctrine:
             PIMSecurity:
                 type: xml
                 is_bundle: false
-                dir: '%kernel.project_dir%/config/doctrine'
+                dir: '%kernel.project_dir%/config/doctrine/security'
                 prefix: 'PIM\Security\Domain\Model'
                 alias: PIMSecurity
+            PIMProductModel:
+                type: xml
+                is_bundle: false
+                dir: '%kernel.project_dir%/config/doctrine/product/model'
+                prefix: 'PIM\Product\Domain\Model'
+                alias: PIMProductModel
+            PIMProductValueObject:
+                type: xml
+                is_bundle: false
+                dir: '%kernel.project_dir%/config/doctrine/product/value_object'
+                prefix: 'PIM\Product\Domain\ValueObject'
+                alias: PIMProductValueObject
             Gesdinet:
                 type: xml
                 is_bundle: false
