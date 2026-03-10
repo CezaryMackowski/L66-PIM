@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PIM\Product\Infrastructure\Http\Controller;
 
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\ORM\OptimisticLockException;
 use InvalidArgumentException;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
@@ -14,6 +15,7 @@ use PIM\Product\Domain\Exception\ProductSkuAlreadyExists;
 use PIM\Product\Infrastructure\Http\Request\UpdateProductRequest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
@@ -43,6 +45,13 @@ final class UpdateProductController extends AbstractController
                 schema: new OA\Schema(type: 'string', format: 'uuid'),
                 example: 'f2e31abf-71c3-429d-a6fd-3d4985a7fcb5',
             ),
+            new OA\Parameter(
+                name: 'If-Match',
+                in: 'header',
+                required: true,
+                schema: new OA\Schema(type: 'string'),
+                example: '"2"',
+            ),
         ],
         responses: [
             new OA\Response(
@@ -58,7 +67,8 @@ final class UpdateProductController extends AbstractController
             ),
             new OA\Response(response: Response::HTTP_UNAUTHORIZED, description: 'Unauthorized'),
             new OA\Response(response: Response::HTTP_NOT_FOUND, description: 'Product not found'),
-            new OA\Response(response: Response::HTTP_CONFLICT, description: 'SKU conflict'),
+            new OA\Response(response: Response::HTTP_CONFLICT, description: 'SKU conflict or stale product version'),
+            new OA\Response(response: Response::HTTP_PRECONDITION_REQUIRED, description: 'Missing If-Match header'),
             new OA\Response(response: Response::HTTP_UNPROCESSABLE_ENTITY, description: 'Validation failed'),
             new OA\Response(response: Response::HTTP_INTERNAL_SERVER_ERROR, description: 'Internal server error'),
         ],
@@ -67,6 +77,7 @@ final class UpdateProductController extends AbstractController
     #[Route(path: '/api/products/{id}', name: 'product_update', methods: ['PUT'])]
     public function __invoke(
         string $id,
+        Request $request,
         #[CurrentUser]
         ?UserInterface $currentUser,
         #[MapRequestPayload(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
@@ -86,9 +97,19 @@ final class UpdateProductController extends AbstractController
                 throw new InvalidArgumentException('Current user identifier cannot be empty.');
             }
 
+            $ifMatch = $request->headers->get('If-Match');
+            if (null === $ifMatch) {
+                return new JsonResponse(
+                    ['error' => 'If-Match header is required.'],
+                    Response::HTTP_PRECONDITION_REQUIRED,
+                );
+            }
+
+            $expectedVersion = $this->parseExpectedVersion($ifMatch);
             $productId = Uuid::fromString($id);
             $this->messageBus->dispatch(new UpdateProductCommand(
                 $productId,
+                $expectedVersion,
                 $updateProductRequest->name,
                 $updateProductRequest->sku,
                 $updateProductRequest->price,
@@ -122,6 +143,13 @@ final class UpdateProductController extends AbstractController
                 return new JsonResponse(['error' => 'Active product with this SKU already exists.'], Response::HTTP_CONFLICT);
             }
 
+            if ($rootException instanceof OptimisticLockException) {
+                return new JsonResponse(
+                    ['error' => 'Product has been modified by another user. Fetch latest version and retry.'],
+                    Response::HTTP_CONFLICT,
+                );
+            }
+
             if ($rootException instanceof InvalidArgumentException) {
                 return new JsonResponse(['error' => $rootException->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -132,5 +160,18 @@ final class UpdateProductController extends AbstractController
         } catch (Throwable) {
             return new JsonResponse(['error' => 'Internal server error.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function parseExpectedVersion(string $ifMatch): int
+    {
+        $ifMatch = trim($ifMatch);
+        if (!preg_match('/^"([1-9]\d*)"$/', $ifMatch, $matches)) {
+            throw new InvalidArgumentException('Invalid If-Match header. Expected format: "N".');
+        }
+
+        return (int) $matches[1];
     }
 }

@@ -13,6 +13,7 @@ final readonly class ProductWithPriceHistoryDto implements JsonSerializable
      * @param list<ProductPriceHistoryItemDto> $priceHistory
      */
     public function __construct(
+        private int $version,
         public string $id,
         public string $name,
         public string $sku,
@@ -32,6 +33,13 @@ final readonly class ProductWithPriceHistoryDto implements JsonSerializable
     public static function fromArray(array $data, array $priceHistory): self
     {
         $id = $data['id'] ?? null;
+        $versionRaw = $data['version'] ?? null;
+        $version = null;
+        if (is_int($versionRaw)) {
+            $version = $versionRaw;
+        } elseif (is_string($versionRaw) && preg_match('/^\d+$/', $versionRaw)) {
+            $version = (int) $versionRaw;
+        }
         $name = $data['name'] ?? null;
         $sku = $data['sku'] ?? null;
         $status = $data['status'] ?? null;
@@ -41,6 +49,8 @@ final readonly class ProductWithPriceHistoryDto implements JsonSerializable
 
         if (
             !is_string($id)
+            || !is_int($version)
+            || 1 > $version
             || !is_string($name)
             || !is_string($sku)
             || !is_string($status)
@@ -62,6 +72,7 @@ final readonly class ProductWithPriceHistoryDto implements JsonSerializable
         ];
 
         return new self(
+            version: $version,
             id: $id,
             name: $name,
             sku: $sku,
@@ -100,5 +111,10 @@ final readonly class ProductWithPriceHistoryDto implements JsonSerializable
             'deletedAt' => $this->deletedAt,
             'priceHistory' => $this->priceHistory,
         ];
+    }
+
+    public function version(): int
+    {
+        return $this->version;
     }
 }

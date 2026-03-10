@@ -39,6 +39,13 @@ final class GetProductController extends AbstractController
             new OA\Response(
                 response: Response::HTTP_OK,
                 description: 'Product returned',
+                headers: [
+                    new OA\Header(
+                        header: 'ETag',
+                        description: 'Current product version, required in If-Match for update/delete.',
+                        schema: new OA\Schema(type: 'string', example: '"2"'),
+                    ),
+                ],
                 content: new OA\JsonContent(
                     required: ['id', 'name', 'sku', 'price', 'status', 'createdAt', 'updatedAt', 'priceHistory'],
                     properties: [
@@ -115,7 +122,11 @@ final class GetProductController extends AbstractController
                 return new JsonResponse(['error' => sprintf('Product with id "%s" was not found.', $id)], Response::HTTP_NOT_FOUND);
             }
 
-            return new JsonResponse($product, Response::HTTP_OK);
+            return new JsonResponse(
+                $product,
+                Response::HTTP_OK,
+                ['ETag' => sprintf('"%d"', $product->version())],
+            );
         } catch (InvalidArgumentException $exception) {
             return new JsonResponse(['error' => $exception->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Throwable) {

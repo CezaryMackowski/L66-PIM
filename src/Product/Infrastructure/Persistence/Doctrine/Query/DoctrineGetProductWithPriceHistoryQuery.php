@@ -23,6 +23,7 @@ final readonly class DoctrineGetProductWithPriceHistoryQuery implements GetProdu
         $product = $this->connection->fetchAssociative(
             <<<SQL
             SELECT p.id, 
+                   p.version,
                    p.name,
                    p.sku,
                    p.price_amount_minor,

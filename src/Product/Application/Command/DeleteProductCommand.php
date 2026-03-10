@@ -10,6 +10,7 @@ final readonly class DeleteProductCommand
 {
     public function __construct(
         public Uuid $productId,
+        public int $expectedVersion,
     ) {
     }
 }

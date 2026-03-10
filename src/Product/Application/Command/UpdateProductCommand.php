@@ -10,6 +10,7 @@ final readonly class UpdateProductCommand
 {
     public function __construct(
         public Uuid $productId,
+        public int $expectedVersion,
         public string $name,
         public string $sku,
         public string $price,

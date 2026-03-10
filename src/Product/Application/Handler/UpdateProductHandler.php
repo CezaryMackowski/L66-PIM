@@ -59,7 +59,7 @@ final readonly class UpdateProductHandler
             $now,
         );
 
-        $this->productRepository->save($product);
+        $this->productRepository->save($product, $command->expectedVersion);
 
         if ($isPriceChanged) {
             $this->messageBus->dispatch(new ProductPriceChanged(

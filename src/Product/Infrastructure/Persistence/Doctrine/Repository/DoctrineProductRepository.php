@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PIM\Product\Infrastructure\Persistence\Doctrine\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
+use Doctrine\ORM\OptimisticLockException;
 use Doctrine\Persistence\ManagerRegistry;
 use PIM\Product\Domain\Enum\ProductStatus;
 use PIM\Product\Domain\Model\Product;
@@ -22,8 +24,15 @@ final class DoctrineProductRepository extends ServiceEntityRepository implements
         parent::__construct($registry, Product::class);
     }
 
-    public function save(Product $product): void
+    /**
+     * @throws OptimisticLockException
+     */
+    public function save(Product $product, ?int $expectedVersion = null): void
     {
+        if (null !== $expectedVersion) {
+            $this->getEntityManager()->lock($product, LockMode::OPTIMISTIC, $expectedVersion);
+        }
+
         $this->getEntityManager()->persist($product);
         $this->getEntityManager()->flush();
     }

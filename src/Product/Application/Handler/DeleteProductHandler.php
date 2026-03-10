@@ -30,6 +30,6 @@ final readonly class DeleteProductHandler
         }
 
         $product->softDelete($this->clock->now());
-        $this->productRepository->save($product);
+        $this->productRepository->save($product, $command->expectedVersion);
     }
 }

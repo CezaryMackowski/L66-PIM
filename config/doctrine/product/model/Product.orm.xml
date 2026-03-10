@@ -12,6 +12,7 @@
         <id name="id" type="uuid">
             <generator strategy="NONE"/>
         </id>
+        <field name="version" type="integer" version="true"/>
         <field name="name" length="255"/>
         <field name="sku" length="64"/>
         <embedded name="price" class="PIM\Product\Domain\ValueObject\Price" use-column-prefix="false"/>

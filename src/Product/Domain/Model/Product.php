@@ -14,6 +14,7 @@ use Symfony\Component\Uid\Uuid;
 class Product
 {
     private Uuid $id;
+    private int $version;
     private string $name;
     private string $sku;
     private Price $price;
@@ -24,6 +25,7 @@ class Product
 
     private function __construct(
         Uuid $id,
+        int $version,
         string $name,
         string $sku,
         Price $price,
@@ -33,6 +35,7 @@ class Product
         ?DateTimeImmutable $deletedAt = null,
     ) {
         $this->id = $id;
+        $this->version = $version;
         $this->name = $name;
         $this->sku = $sku;
         $this->price = $price;
@@ -52,6 +55,7 @@ class Product
     ): self {
         return new self(
             $id,
+            1,
             $name->value(),
             $sku->value(),
             $price,
@@ -70,6 +74,11 @@ class Product
     public function name(): ProductName
     {
         return new ProductName($this->name);
+    }
+
+    public function version(): int
+    {
+        return $this->version;
     }
 
     public function sku(): Sku

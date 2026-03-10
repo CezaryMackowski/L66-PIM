@@ -10,7 +10,7 @@ use Symfony\Component\Uid\Uuid;
 
 interface ProductRepositoryInterface
 {
-    public function save(Product $product): void;
+    public function save(Product $product, ?int $expectedVersion = null): void;
 
     public function findById(Uuid $id): ?Product;
 
