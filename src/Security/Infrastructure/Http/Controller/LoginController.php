@@ -43,4 +43,3 @@ final class LoginController extends AbstractController
         return new JsonResponse(['error' => 'This endpoint should be handled by the security firewall.'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
-
