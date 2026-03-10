@@ -101,4 +101,18 @@ class Product
     {
         return $this->deletedAt;
     }
+
+    public function update(
+        ProductName $name,
+        Sku $sku,
+        Price $price,
+        ProductStatus $status,
+        DateTimeImmutable $updatedAt,
+    ): void {
+        $this->name = $name->value();
+        $this->sku = $sku->value();
+        $this->price = $price;
+        $this->status = $status;
+        $this->updatedAt = $updatedAt;
+    }
 }

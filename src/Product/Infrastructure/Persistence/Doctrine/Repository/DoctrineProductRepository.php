@@ -10,6 +10,7 @@ use PIM\Product\Domain\Enum\ProductStatus;
 use PIM\Product\Domain\Model\Product;
 use PIM\Product\Domain\Repository\ProductRepositoryInterface;
 use PIM\Product\Domain\ValueObject\Sku;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<Product>
@@ -27,16 +28,37 @@ final class DoctrineProductRepository extends ServiceEntityRepository implements
         $this->getEntityManager()->flush();
     }
 
-    public function existsActiveBySku(Sku $sku): bool
+    public function findById(Uuid $id): ?Product
     {
-        $result = $this->createQueryBuilder('product')
+        $entity = $this->createQueryBuilder('product')
+            ->andWhere('product.id = :id')
+            ->andWhere('product.deletedAt IS NULL')
+            ->setParameter('id', $id)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $entity instanceof Product ? $entity : null;
+    }
+
+    public function existsActiveBySku(Sku $sku, ?Uuid $excludeProductId = null): bool
+    {
+        $queryBuilder = $this->createQueryBuilder('product')
             ->select('1')
             ->andWhere('product.sku = :sku')
             ->andWhere('product.deletedAt IS NULL')
             ->andWhere('product.status = :status')
             ->setParameter('sku', $sku->value())
             ->setParameter('status', ProductStatus::ACTIVE->value)
-            ->setMaxResults(1)
+            ->setMaxResults(1);
+
+        if (null !== $excludeProductId) {
+            $queryBuilder
+                ->andWhere('product.id != :excludeProductId')
+                ->setParameter('excludeProductId', $excludeProductId);
+        }
+
+        $result = $queryBuilder
             ->getQuery()
             ->getOneOrNullResult();
 
