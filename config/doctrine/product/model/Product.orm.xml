@@ -15,7 +15,7 @@
         <field name="name" length="255"/>
         <field name="sku" length="64"/>
         <embedded name="price" class="PIM\Product\Domain\ValueObject\Price" use-column-prefix="false"/>
-        <field name="status" enum-type="PIM\Product\Domain\Enum\ProductStatus"/>
+        <field name="status" type="string" enum-type="PIM\Product\Domain\Enum\ProductStatus"/>
         <field name="createdAt" type="datetime_immutable" column="created_at"/>
         <field name="updatedAt" type="datetime_immutable" column="updated_at"/>
         <field name="deletedAt" type="datetime_immutable" column="deleted_at" nullable="true"/>

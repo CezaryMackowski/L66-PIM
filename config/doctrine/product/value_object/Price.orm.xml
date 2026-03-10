@@ -7,6 +7,6 @@
 
     <embeddable name="PIM\Product\Domain\ValueObject\Price">
         <field name="amountMinor" type="integer" column="price_amount_minor"/>
-        <field name="currency" enum-type="PIM\Product\Domain\Enum\Currency" column="currency" length="3"/>
+        <field name="currency" type="enum" enum-type="PIM\Product\Domain\Enum\Currency" column="currency" length="3"/>
     </embeddable>
 </doctrine-mapping>

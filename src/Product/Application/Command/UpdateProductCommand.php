@@ -15,6 +15,7 @@ final readonly class UpdateProductCommand
         public string $price,
         public string $currency,
         public string $status,
+        public string $actorIdentifier,
     ) {
     }
 }

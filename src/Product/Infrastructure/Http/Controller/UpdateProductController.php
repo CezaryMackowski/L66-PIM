@@ -19,6 +19,8 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Uid\Uuid;
 use Throwable;
 
@@ -65,12 +67,23 @@ final class UpdateProductController extends AbstractController
     #[Route(path: '/api/products/{id}', name: 'product_update', methods: ['PUT'])]
     public function __invoke(
         string $id,
+        #[CurrentUser]
+        ?UserInterface $currentUser,
         #[MapRequestPayload(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         UpdateProductRequest $updateProductRequest,
     ): Response {
         try {
             if (!Uuid::isValid($id)) {
                 throw new InvalidArgumentException('Invalid product id.');
+            }
+
+            if (null === $currentUser) {
+                throw new InvalidArgumentException('Current user is required.');
+            }
+
+            $actorIdentifier = trim($currentUser->getUserIdentifier());
+            if ('' === $actorIdentifier) {
+                throw new InvalidArgumentException('Current user identifier cannot be empty.');
             }
 
             $productId = Uuid::fromString($id);
@@ -81,6 +94,7 @@ final class UpdateProductController extends AbstractController
                 $updateProductRequest->price,
                 $updateProductRequest->currency,
                 $updateProductRequest->status,
+                $actorIdentifier,
             ));
 
             return new JsonResponse(

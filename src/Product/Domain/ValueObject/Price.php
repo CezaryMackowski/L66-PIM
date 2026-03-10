@@ -40,6 +40,11 @@ final class Price
         return new self($amountMinor, Currency::fromString($currency));
     }
 
+    public static function fromMinor(int $amountMinor, string $currency): self
+    {
+        return new self($amountMinor, Currency::fromString($currency));
+    }
+
     public function amountMinor(): int
     {
         return $this->amountMinor;
