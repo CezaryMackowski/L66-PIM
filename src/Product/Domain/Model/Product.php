@@ -115,4 +115,10 @@ class Product
         $this->status = $status;
         $this->updatedAt = $updatedAt;
     }
+
+    public function softDelete(DateTimeImmutable $deletedAt): void
+    {
+        $this->deletedAt = $deletedAt;
+        $this->updatedAt = $deletedAt;
+    }
 }
