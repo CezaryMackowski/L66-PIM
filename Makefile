@@ -9,6 +9,8 @@ help: # Show help for each of the Makefile recipes.
 
 #========== Project ==========#
 
+start: up composer create-db create-db-test migration-all fixtures generate-jwt-keys # Setup and start application
+
 up: # Start project
 	${DOCKER_COMPOSE_CMD} up -d
 
@@ -44,6 +46,9 @@ cache-clear: # Clear Symfony cache
 
 prepare-pr: phpcsfixer-fix phpstan phpunit # Prepare the code for a pull request by running code style fix, static analysis, and tests
 
+generate-jwt-keys: # Generate Lexik JWT keys
+	${EXEC_COMMAND} bin/console lexik:jwt:generate-keypair --skip-if-exists
+
 #========== Project ==========#
 
 #========== Database ==========#
@@ -70,7 +75,7 @@ recreate-db-test: # Drop and recreate the test database, then execute all migrat
 migration-all: migration migration-test # Execute all migrations for both databases
 
 migration: # Execute all migrations for database
-	${EXEC_COMMAND} bin/console doctrine:migrations:migrate --allow-no-migration
+	${EXEC_COMMAND} bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
 migration-test: # Execute all migrations for test database
 	${EXEC_COMMAND} bin/console doctrine:migrations:migrate --env=test --no-interaction --allow-no-migration
@@ -81,8 +86,8 @@ fixtures: # Load tasks to database using fixtures
 
 #========== Swagger ==========#
 dump-config-json: # Dump documentation in OpenAPI format to json
-	${EXEC_COMMAND} bin/console nelmio:apidoc:dump --format=json
+	${EXEC_COMMAND} bin/console nelmio:apidoc:dump --format=json > openapi.json
 
 dump-config-yaml: # Dump documentation in OpenAPI format to yaml
-	${EXEC_COMMAND} bin/console nelmio:apidoc:dump --format=yaml
+	${EXEC_COMMAND} bin/console nelmio:apidoc:dump --format=yaml > openapi.yaml
 #========== Swagger ==========#
